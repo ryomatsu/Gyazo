@@ -1,3 +1,5 @@
+#!/home/ryomatsu/.rbenv/shims/ruby
+#
 #!/usr/bin/env ruby
 # -*- ruby -*-
 #
@@ -7,6 +9,7 @@
 require 'cgi'
 require 'digest/md5'
 require 'sdbm'
+require 'RMagick'
 
 cgi = CGI.new("html3")
 
@@ -24,11 +27,18 @@ dbm = SDBM.open('db/id',0644)
 dbm[hash] = id
 dbm.close
 
-File.open("data/#{hash}.png","w").print(imagedata)
+filename = "img/#{hash}.png"
+File.open(filename,"w").print(imagedata)
+
+if imagedata.bytesize > 100000
+    image = Magick::Image.from_blob(imagedata).first
+    filename = "img/#{hash}.jpeg"
+    image.write(filename)
+end
 
 headers = {}
 if create_newid then
     headers = {"X-Gyazo-Id"=>id}
 end
 
-cgi.out(headers){"http://gyazo.com/#{hash}.png"}
+cgi.out(headers){"http://gyazo.loumo.jp/#{filename}"}
